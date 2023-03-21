@@ -20,12 +20,12 @@ async def register_progress_id():
 async def progress(id: str):
     assert id in state
     await asyncio.sleep(1)
-    return {"progress": str(state[id]['progress'])}
-
+    return {"progress": str(state[id].get('progress',0))}
 
 async def long_task(loop: asyncio.AbstractEventLoop, id):
     # None uses the default executor (ThreadPoolExecutor)
     def task():
+        state[id] = {'progress': 0}
         for i in range(10):
             time.sleep(1)
             state[id]['progress'] = i / 10
@@ -36,6 +36,5 @@ async def long_task(loop: asyncio.AbstractEventLoop, id):
 @app.post("/predict")
 async def root(id: str):
     assert id in state
-    state[id] = {'progress': 0}
     loop = asyncio.get_event_loop()
     return await long_task(loop, id)
